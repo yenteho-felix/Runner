@@ -7,9 +7,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/Controller.h"
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
-#include "InputActionValue.h"
+#include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -60,71 +59,74 @@ void ARunnerCharacter::BeginPlay()
 	Super::BeginPlay();
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Input
-
-void ARunnerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void ARunnerCharacter::PlaySlideMontage()
 {
-	// Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (!AnimInstance)
 	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
+		UE_LOG(LogTemp, Warning, TEXT("GetAnimInstance() returned nullptr!"));
+		return;
 	}
-	
-	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
+
+	UCapsuleComponent* MyCapsuleComponent = GetCapsuleComponent();
+	if (!MyCapsuleComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GetCapsuleComponent() returned nullptr!"));
+	}
+
+	if (SlideMontage)
+	{
+		// Get velocity and check if speed > 60
+		FVector Velocity = GetCharacterMovement()->Velocity;
+		float Speed = Velocity.Size();
+		if (Speed < 60.0f)
+		{
+			return;
+		}
+
+		// Disable collision
+		MyCapsuleComponent->SetCollisionResponseToChannel(ECC_Destructible, ECollisionResponse::ECR_Ignore);
+
+		// Disable input
+		APlayerController* MyPlayerController = Cast<APlayerController>(GetController());
+		if (MyPlayerController)
+		{
+			MyPlayerController->DisableInput(MyPlayerController);
+		}
+
+		// Play animation
+		AnimInstance->Montage_Play(SlideMontage, 1.5f);
+
+		FOnMontageEnded MontageEndedDelegate;
+		if (!MontageEndedDelegate.IsBound())
+		{
+			MontageEndedDelegate.BindUObject(this, &ARunnerCharacter::OnSlideMontageEnded);
+		}
+		AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, SlideMontage);
 		
-		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
-		// Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ARunnerCharacter::Move);
-
-		// Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ARunnerCharacter::Look);
 	}
 	else
 	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+		UE_LOG(LogTemp, Warning, TEXT("SlideMontage is not assigned!"));
+		return;
 	}
 }
 
-void ARunnerCharacter::Move(const FInputActionValue& Value)
+void ARunnerCharacter::OnSlideMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
-
-	if (Controller != nullptr)
+	UCapsuleComponent* MyCapsuleComponent = GetCapsuleComponent();
+	if (!MyCapsuleComponent)
 	{
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	
-		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		// add movement 
-		AddMovementInput(ForwardDirection, MovementVector.Y);
-		AddMovementInput(RightDirection, MovementVector.X);
+		UE_LOG(LogTemp, Warning, TEXT("GetCapsuleComponent() returned nullptr!"));
 	}
-}
 
-void ARunnerCharacter::Look(const FInputActionValue& Value)
-{
-	// input is a Vector2D
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
-	if (Controller != nullptr)
+	// Enable input
+	APlayerController* MyPlayerController = Cast<APlayerController>(GetController());
+	if (MyPlayerController)
 	{
-		// add yaw and pitch input to controller
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
+		MyPlayerController->EnableInput(MyPlayerController);
 	}
+
+	// Restore collision response after the animation
+	MyCapsuleComponent->SetCollisionResponseToChannel(ECC_Destructible, ECollisionResponse::ECR_Block);
 }

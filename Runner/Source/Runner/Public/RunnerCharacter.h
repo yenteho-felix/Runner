@@ -43,6 +43,9 @@ public:
 public:
 	void PlaySlideMontage();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
+	bool bIsSliding;
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* SlideMontage;

@@ -84,6 +84,8 @@ void ARunnerCharacter::PlaySlideMontage()
 			return;
 		}
 
+		bIsSliding = true;
+
 		// Disable collision
 		MyCapsuleComponent->SetCollisionResponseToChannel(ECC_Destructible, ECollisionResponse::ECR_Ignore);
 
@@ -129,4 +131,6 @@ void ARunnerCharacter::OnSlideMontageEnded(UAnimMontage* Montage, bool bInterrup
 
 	// Restore collision response after the animation
 	MyCapsuleComponent->SetCollisionResponseToChannel(ECC_Destructible, ECollisionResponse::ECR_Block);
+
+	bIsSliding = false;
 }

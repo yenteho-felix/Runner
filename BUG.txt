@@ -1,2 +1,0 @@
-Bug
-	- The score incorrectly increases by 2 when the player steps on the first tile.

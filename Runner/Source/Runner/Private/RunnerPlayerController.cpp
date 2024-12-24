@@ -5,8 +5,10 @@
 #include "RunnerCharacter.h"
 
 #include "EnhancedInputSubsystems.h"
+#include "Blueprint/UserWidget.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Blueprint/UserWidget.h"
 
 void ARunnerPlayerController::BeginPlay()
 {
@@ -31,6 +33,8 @@ void ARunnerPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ARunnerPlayerController::Look);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ARunnerPlayerController::Jump);
 		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Triggered, this, &ARunnerPlayerController::Slide);
+		//EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Triggered, this, &ARunnerPlayerController::TogglePauseMenu);
+		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Started, this, &ARunnerPlayerController::TogglePauseMenu);
 	}
 	else
 	{
@@ -82,5 +86,72 @@ void ARunnerPlayerController::Slide()
 		FVector Impulse(0.0f, 0.0f, -1000.0f);
 		MyCharacter->LaunchCharacter(Impulse, true, false);
 		MyCharacter->PlaySlideMontage();
+	}
+}
+
+void ARunnerPlayerController::ShowPauseMenu()
+{
+	UE_LOG(LogTemp, Display, TEXT("Open Pause Menu"));
+	//PauseMenuWidget = CreateWidget<UUserWidget>(this, PauseMenuWidgetClass);
+	if (!PauseMenuWidgetClass)
+	{
+		return;
+	}
+	
+	if (!PauseMenuWidget)
+	{
+		PauseMenuWidget = CreateWidget<UUserWidget>(this, PauseMenuWidgetClass);
+	}
+	
+	if (PauseMenuWidget && !PauseMenuWidget->IsInViewport())
+	{
+		PauseMenuWidget->AddToViewport();
+	
+		// Set input mode for UI
+		FInputModeUIOnly InputMode;
+		if (PauseMenuWidget->IsFocusable())
+		{
+			InputMode.SetWidgetToFocus(PauseMenuWidget->TakeWidget());
+		}
+		SetInputMode(InputMode);
+	
+		// Show mouse cursor
+		bShowMouseCursor = true;
+	
+		// Pause the game
+		SetPause(true);
+	}
+}
+
+void ARunnerPlayerController::HidePauseMenu()
+{
+	UE_LOG(LogTemp, Display, TEXT("Close Pause Menu"));
+	//PauseMenuWidget = nullptr;
+	if (PauseMenuWidget)
+	{
+		PauseMenuWidget->RemoveFromParent();
+		PauseMenuWidget = nullptr;
+	
+		// Reset input mode
+		FInputModeGameOnly InputMode;
+		SetInputMode(InputMode);
+	
+		// Hide mouse cursor
+		bShowMouseCursor = false;
+	
+		// Resume the game
+		SetPause(false);
+	}
+}
+
+void ARunnerPlayerController::TogglePauseMenu()
+{
+	if (PauseMenuWidget && PauseMenuWidget->IsInViewport())
+	{
+		HidePauseMenu();
+	}
+	else
+	{
+		ShowPauseMenu();
 	}
 }

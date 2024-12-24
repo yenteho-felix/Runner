@@ -8,6 +8,7 @@
 #include "RunnerPlayerController.generated.h"
 
 class UInputMappingContext;
+class UUserWidget;
 
 /**
  * 
@@ -32,6 +33,8 @@ protected:
 	UInputAction* LookAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* SlideAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* PauseAction;
 
 	virtual void SetupInputComponent() override;
 
@@ -39,5 +42,18 @@ protected:
 	void Look(const FInputActionValue& Value);
 	void Jump();
 	void Slide();
-	void PlaySlideMontage();
+
+/* UI */
+public:
+	void ShowPauseMenu();
+	void HidePauseMenu();
+	UFUNCTION(BlueprintCallable)
+	void TogglePauseMenu();
+	
+protected:
+	UPROPERTY()
+	UUserWidget* PauseMenuWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UUserWidget> PauseMenuWidgetClass;
 };

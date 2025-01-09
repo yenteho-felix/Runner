@@ -9,6 +9,7 @@
 #include "GameFramework/Controller.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
+#include "TimerManager.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -31,7 +32,7 @@ ARunnerCharacter::ARunnerCharacter()
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
-	GetCharacterMovement()->JumpZVelocity = 700.f;
+	GetCharacterMovement()->JumpZVelocity = 500.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
@@ -59,68 +60,32 @@ void ARunnerCharacter::BeginPlay()
 	Super::BeginPlay();
 }
 
-void ARunnerCharacter::PlaySlideMontage()
+void ARunnerCharacter::StartSlide()
 {
-	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-	if (!AnimInstance)
+	bIsSliding = true;
+
+	// Disable input
+	APlayerController* MyPlayerController = Cast<APlayerController>(GetController());
+	if (MyPlayerController)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GetAnimInstance() returned nullptr!"));
-		return;
+		MyPlayerController->DisableInput(MyPlayerController);
 	}
 
+	// Disable collision
 	UCapsuleComponent* MyCapsuleComponent = GetCapsuleComponent();
 	if (!MyCapsuleComponent)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("GetCapsuleComponent() returned nullptr!"));
 	}
+	MyCapsuleComponent->SetCollisionResponseToChannel(ECC_Destructible, ECollisionResponse::ECR_Ignore);
 
-	if (SlideMontage)
-	{
-		// Get velocity and check if speed > 60
-		FVector Velocity = GetCharacterMovement()->Velocity;
-		float Speed = Velocity.Size();
-		if (Speed < 60.0f)
-		{
-			return;
-		}
-
-		bIsSliding = true;
-
-		// Disable collision
-		MyCapsuleComponent->SetCollisionResponseToChannel(ECC_Destructible, ECollisionResponse::ECR_Ignore);
-
-		// Disable input
-		APlayerController* MyPlayerController = Cast<APlayerController>(GetController());
-		if (MyPlayerController)
-		{
-			MyPlayerController->DisableInput(MyPlayerController);
-		}
-
-		// Play animation
-		AnimInstance->Montage_Play(SlideMontage, 1.5f);
-
-		FOnMontageEnded MontageEndedDelegate;
-		if (!MontageEndedDelegate.IsBound())
-		{
-			MontageEndedDelegate.BindUObject(this, &ARunnerCharacter::OnSlideMontageEnded);
-		}
-		AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, SlideMontage);
-		
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("SlideMontage is not assigned!"));
-		return;
-	}
+	// Use Timer to end sliding
+	GetWorld()->GetTimerManager().SetTimer(SlidingTimerHandle, this, &ARunnerCharacter::EndSlide, AnimationLength, false);
 }
 
-void ARunnerCharacter::OnSlideMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+void ARunnerCharacter::EndSlide()
 {
-	UCapsuleComponent* MyCapsuleComponent = GetCapsuleComponent();
-	if (!MyCapsuleComponent)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("GetCapsuleComponent() returned nullptr!"));
-	}
+	bIsSliding = false;
 
 	// Enable input
 	APlayerController* MyPlayerController = Cast<APlayerController>(GetController());
@@ -130,7 +95,10 @@ void ARunnerCharacter::OnSlideMontageEnded(UAnimMontage* Montage, bool bInterrup
 	}
 
 	// Restore collision response after the animation
+	UCapsuleComponent* MyCapsuleComponent = GetCapsuleComponent();
+	if (!MyCapsuleComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GetCapsuleComponent() returned nullptr!"));
+	}
 	MyCapsuleComponent->SetCollisionResponseToChannel(ECC_Destructible, ECollisionResponse::ECR_Block);
-
-	bIsSliding = false;
 }

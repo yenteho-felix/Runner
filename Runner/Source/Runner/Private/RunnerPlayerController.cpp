@@ -33,7 +33,6 @@ void ARunnerPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ARunnerPlayerController::Look);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ARunnerPlayerController::Jump);
 		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Triggered, this, &ARunnerPlayerController::Slide);
-		//EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Triggered, this, &ARunnerPlayerController::TogglePauseMenu);
 		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Started, this, &ARunnerPlayerController::TogglePauseMenu);
 	}
 	else
@@ -85,7 +84,7 @@ void ARunnerPlayerController::Slide()
 	{
 		FVector Impulse(0.0f, 0.0f, -1000.0f);
 		MyCharacter->LaunchCharacter(Impulse, true, false);
-		MyCharacter->PlaySlideMontage();
+		MyCharacter->StartSlide();
 	}
 }
 

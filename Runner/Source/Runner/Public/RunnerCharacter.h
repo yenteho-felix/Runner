@@ -41,16 +41,15 @@ public:
 
 /* Slide Animations */
 public:
-	void PlaySlideMontage();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Animation")
+	bool bIsSliding = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Animation")
+	float AnimationLength = 1;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
-	bool bIsSliding;
+	void StartSlide();
+	void EndSlide();
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
-	UAnimMontage* SlideMontage;
-
-	UFUNCTION()
-	void OnSlideMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	FTimerHandle SlidingTimerHandle;
 };
 

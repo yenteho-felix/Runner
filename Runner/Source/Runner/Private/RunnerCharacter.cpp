@@ -9,6 +9,7 @@
 #include "GameFramework/Controller.h"
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
+#include "TimerManager.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -57,6 +58,49 @@ void ARunnerCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+}
+
+void ARunnerCharacter::StartSlide()
+{
+	bIsSliding = true;
+
+	// Disable input
+	APlayerController* MyPlayerController = Cast<APlayerController>(GetController());
+	if (MyPlayerController)
+	{
+		MyPlayerController->DisableInput(MyPlayerController);
+	}
+
+	// Disable collision
+	UCapsuleComponent* MyCapsuleComponent = GetCapsuleComponent();
+	if (!MyCapsuleComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GetCapsuleComponent() returned nullptr!"));
+	}
+	MyCapsuleComponent->SetCollisionResponseToChannel(ECC_Destructible, ECollisionResponse::ECR_Ignore);
+
+	// Use Timer to end sliding
+	GetWorld()->GetTimerManager().SetTimer(SlidingTimerHandle, this, &ARunnerCharacter::EndSlide, AnimationLength, false);
+}
+
+void ARunnerCharacter::EndSlide()
+{
+	bIsSliding = false;
+
+	// Enable input
+	APlayerController* MyPlayerController = Cast<APlayerController>(GetController());
+	if (MyPlayerController)
+	{
+		MyPlayerController->EnableInput(MyPlayerController);
+	}
+
+	// Restore collision response after the animation
+	UCapsuleComponent* MyCapsuleComponent = GetCapsuleComponent();
+	if (!MyCapsuleComponent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GetCapsuleComponent() returned nullptr!"));
+	}
+	MyCapsuleComponent->SetCollisionResponseToChannel(ECC_Destructible, ECollisionResponse::ECR_Block);
 }
 
 void ARunnerCharacter::PlaySlideMontage()

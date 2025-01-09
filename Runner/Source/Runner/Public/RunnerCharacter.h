@@ -46,10 +46,18 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation")
 	bool bIsSliding;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	float AnimationLength = 1;
+
+	void StartSlide();
+	void EndSlide();
+
 protected:
+	FTimerHandle SlidingTimerHandle;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	UAnimMontage* SlideMontage;
-
+	
 	UFUNCTION()
 	void OnSlideMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 };

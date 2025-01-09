@@ -85,7 +85,6 @@ void ARunnerPlayerController::Slide()
 		FVector Impulse(0.0f, 0.0f, -1000.0f);
 		MyCharacter->LaunchCharacter(Impulse, true, false);
 		MyCharacter->StartSlide();
-		//MyCharacter->PlaySlideMontage();
 	}
 }
 

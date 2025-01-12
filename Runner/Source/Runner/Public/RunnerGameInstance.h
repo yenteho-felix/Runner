@@ -43,7 +43,7 @@ protected:
 	int32 MyUserIndex = 0;
 	
 	UPROPERTY()
-	URunnerSaveGame* MySaveGame = nullptr;
+	TObjectPtr<URunnerSaveGame> MySaveGame;
 
 	void CreateSaveGameObject(const TSubclassOf<URunnerSaveGame>& SaveGameClass);
 	

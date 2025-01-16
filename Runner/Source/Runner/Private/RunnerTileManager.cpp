@@ -2,12 +2,13 @@
 
 
 #include "RunnerTileManager.h"
+#include "UObject/Interface.h"
+#include "RunnerCollisionInterface.h"
 
 void URunnerTileManager::ExtendTile()
 {
-	FTransform TransformPoint = FTransform();
-	AddTile(TransformPoint);
-
+	AddTile();
+	
 	if (TileActorArray.Num() > TilesAheadPlayer + TilesBehindPlayer)
 	{
 		RemoveTile();
@@ -16,32 +17,38 @@ void URunnerTileManager::ExtendTile()
 
 void URunnerTileManager::InitiateTile()
 {
-	FTransform AttachPoint = FTransform();
-
+	TileAttachLocation = FirstTileLocation;
+	
 	for(int32 i=0; i < TilesAheadPlayer; i++)
 	{
-		AddTile(AttachPoint);
-
-		// Update AttachPoint for the next Floor
-		if (TileClass)
-		{
-			FVector NewLocation = AttachPoint.GetLocation() + NextAttachPoint;
-			AttachPoint.SetLocation(NewLocation);
-			//AttachPoint = FloorActorClass->GetAttachPoint();
-		}
+		AddTile();
 	}
 }
 
-void URunnerTileManager::AddTile(const FTransform& AttachPoint)
+void URunnerTileManager::AddTile()
 {
 	if (TileClass)
 	{
-		if (GetWorld())
+		if (TileClass->ImplementsInterface(URunnerCollisionInterface::StaticClass()))
 		{
-			if (AActor* NewFloorActor = GetWorld()->SpawnActor<AActor>(TileClass, AttachPoint))
+			const FTransform TileAttachTransform(FRotator::ZeroRotator, TileAttachLocation);
+		
+			if (AActor* NewFloorActor = GetWorld()->SpawnActor<AActor>(TileClass, TileAttachTransform))
 			{
+				//UE_LOG(LogTemp, Display, TEXT("Adding tile to world at position: %s"), *TileAttachLocation.ToString());
 				TileActorArray.Add(NewFloorActor);
-			}		
+				TileCount++;
+				
+				IRunnerCollisionInterface* I = Cast<IRunnerCollisionInterface>(NewFloorActor);
+				if (I)
+				{
+					TileAttachLocation = I->Execute_GetAttachLocation(NewFloorActor);
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s does not implement URunnerCollisionInterface"), *TileClass->GetName());
 		}
 	}
 	else

@@ -55,6 +55,9 @@ protected:
 	/** Calculates the floor extent based on the given child actor component. */
 	FVector CalculateFloorExtent(const UChildActorComponent* AttachParent) const;
 
+	/** Iterate over the spawned objects and remove any that overlap with existing objects in the level. */
+	void ResolveOverlaps();
+
 	/** Adds an arrow for visualization */
 	void AddArrowComponent(const FVector& Location, const FColor& Color, UChildActorComponent* AttachParent);
 	

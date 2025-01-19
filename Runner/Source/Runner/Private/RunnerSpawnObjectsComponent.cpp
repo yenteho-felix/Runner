@@ -4,6 +4,8 @@
 #include "RunnerSpawnObjectsComponent.h"
 #include "Algo/RandomShuffle.h"
 #include "Components/ArrowComponent.h"
+#include "CollisionQueryParams.h"
+#include "PropertyAccess.h"
 
 URunnerSpawnObjectsComponent::URunnerSpawnObjectsComponent()
 {
@@ -43,9 +45,11 @@ void URunnerSpawnObjectsComponent::SpawnObjects(UChildActorComponent* AttachPare
         // Pick a random class form the array
         TSubclassOf<AActor> ActorClass = SpawnSettings.ActorClasses[FMath::RandRange(0, SpawnSettings.ActorClasses.Num() - 1)];
 
-        //UE_LOG(LogTemp, Display, TEXT("Actor[%i] %s"), i, *ActorClass->GetName());
         SpawnObjectClass(ActorClass, SpawnTransforms[i], AttachParent);
     }
+
+    // Remove spawned that overlapped with existing objects
+    //ResolveOverlaps();
 }
 
 void URunnerSpawnObjectsComponent::RemoveObjects()
@@ -128,6 +132,58 @@ FVector URunnerSpawnObjectsComponent::CalculateFloorExtent(const UChildActorComp
 
     //UE_LOG(LogTemp, Display, TEXT("FloorExtend: %s"), *FloorExtent.ToString());
     return FloorExtent;
+}
+
+void URunnerSpawnObjectsComponent::ResolveOverlaps()
+{
+    UE_LOG(LogTemp, Display, TEXT("Spawned Object Count is %i"), SpawnedObjects.Num());
+    for (TObjectPtr<UChildActorComponent> Object : SpawnedObjects)
+    {
+        UE_LOG(LogTemp, Display, TEXT("Object %s"), *Object->GetChildActor()->GetName());
+    }
+    
+    for (int32 i = SpawnedObjects.Num() - 1; i >= 0; --i)
+    {
+        UChildActorComponent* Object = SpawnedObjects[i];
+        if (AActor* SpawnedActor = Object->GetChildActor())
+        {
+            UE_LOG(LogTemp, Display, TEXT("Checking object %s at location %s"), *SpawnedActor->GetName(), *SpawnedActor->GetActorLocation().ToString());
+            // Perform overlap check
+            //TArray<FOverlapResult> Overlaps;
+            FCollisionQueryParams QueryParams;
+            QueryParams.AddIgnoredActor(SpawnedActor);
+
+            bool bOverlapping = GetWorld()->OverlapBlockingTestByChannel(
+                SpawnedActor->GetActorLocation(),
+                SpawnedActor->GetActorRotation().Quaternion(), 
+                ECC_WorldStatic, 
+                FCollisionShape::MakeSphere(1.0f), 
+                QueryParams
+            );
+
+            // bool bOverlapping = GetWorld()->OverlapMultiByChannel(
+            //     Overlaps,
+            //     SpawnedActor->GetActorLocation(),
+            //     FQuat::Identity,
+            //     ECC_WorldDynamic, // Adjust channel as needed
+            //     FCollisionShape::MakeSphere(50.0f), // Adjust shape and size as needed
+            //     QueryParams
+            // );
+
+            // Delete spawned object 
+            if (bOverlapping)
+            {
+                UE_LOG(LogTemp, Display, TEXT("SpawnedActor %s overlapped with others, delete it"), *SpawnedActor->GetName());
+                SpawnedObjects.RemoveAt(i);
+                Object->DestroyComponent();
+            }           
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("Object has no ChildActor"))
+        }
+
+    }
 }
 
 void URunnerSpawnObjectsComponent::AddArrowComponent(const FVector& Location, const FColor& Color, UChildActorComponent* AttachParent)

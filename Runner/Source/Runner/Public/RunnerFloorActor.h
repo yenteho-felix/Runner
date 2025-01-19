@@ -83,22 +83,27 @@ public:
  */
 public:
 	/** Component to spawn Coin */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Spawner Settings")
 	TObjectPtr<URunnerSpawnObjectsComponent> CoinSpawner;
 
 	/** Component to spawn Powerup */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Spawner Settings")
 	TObjectPtr<URunnerSpawnObjectsComponent> PowerupSpawner;
 
 	/** Component to spawn Obstacle */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Spawner Settings")
 	TObjectPtr<URunnerSpawnObjectsComponent> ObstacleSpawner;
 
 	/** Component to spawn Moving Obstacle */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Spawner Settings")
 	TObjectPtr<URunnerSpawnObjectsComponent> MovingObstacleSpawner;
 
+	/** Spawn all objects based on constraints */
+	UFUNCTION(BlueprintCallable)
+	void SpawnAllObjects();
+	
 protected:
+	/** Return true if objects should spawn */
 	UFUNCTION(BlueprintCallable)
 	bool ShouldSpawnObjects(int32 SpawnIntervalBase, int32 SpawnIntervalRandomOffset) const;
 	
@@ -109,15 +114,29 @@ protected:
  */
 public:
 	/** The increment to player speed after passing a floor tile. */
-	UPROPERTY(EditAnywhere, Category = "Default|Speed Adjustment")
+	UPROPERTY(EditAnywhere, Category = "Default|Speed Settings")
 	float SpeedIncrement = 10;
 
 	/** The maximum speed the player can reach. */
-	UPROPERTY(EditAnywhere, Category = "Default|Speed Adjustment")
+	UPROPERTY(EditAnywhere, Category = "Default|Speed Settings")
 	float MaxSpeed = 1500;
 
 protected:
 	/** Increases the player's speed by the specified increment, capping it at the maximum speed. */
 	UFUNCTION(BlueprintCallable)
 	void IncreaseSpeed(AActor* Actor, float Increment, float Max);
+
+/**
+ * -----------------------------------------------
+ *  Player Score Update
+ * -----------------------------------------------
+ */
+public:
+	/** The score increment when passing a tile */
+	UPROPERTY(EditAnywhere, Category = "Default|Score Settings")
+	int32 ScoreIncrement = 1;
+
+protected:
+	UFUNCTION(BlueprintCallable)
+	void IncreaseScore(int32 Amount);
 };

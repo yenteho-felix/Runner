@@ -5,6 +5,7 @@
 
 #include "RunnerCharacter.h"
 #include "RunnerGameMode.h"
+#include "RunnerScoreManager.h"
 #include "RunnerSpawnObjectsComponent.h"
 #include "RunnerTileManager.h"
 #include "Components/ArrowComponent.h"
@@ -35,66 +36,48 @@ ARunnerFloorActor::ARunnerFloorActor()
 	
 	// Create and assign default value for Coin
 	CoinSpawner = CreateDefaultSubobject<URunnerSpawnObjectsComponent>(TEXT("CoinSpawner"));
-	CoinSpawner->SpawnSettings.bEnabled = true;
 	CoinSpawner->SpawnSettings.ActorNum = 10;
 	CoinSpawner->SpawnSettings.PointsPerLane = 6;
 	CoinSpawner->SpawnSettings.LaneYOffsets = {-325, 0, 325};
 	CoinSpawner->SpawnSettings.XOffset = 50;
 	CoinSpawner->SpawnSettings.ZOffset = 0;
-	CoinSpawner->SpawnSettings.ActorRotator = FRotator(0, 0, 0);
 
 	// Create and assign default value for Powerup
 	PowerupSpawner = CreateDefaultSubobject<URunnerSpawnObjectsComponent>(TEXT("PowerupSpawner"));
-	PowerupSpawner->SpawnSettings.bEnabled = true;
 	PowerupSpawner->SpawnSettings.ActorNum = 1;
 	PowerupSpawner->SpawnSettings.PointsPerLane = 6;
 	PowerupSpawner->SpawnSettings.LaneYOffsets = {-325, 0, 325};
 	PowerupSpawner->SpawnSettings.XOffset = 50;
 	PowerupSpawner->SpawnSettings.ZOffset = 0;
-	PowerupSpawner->SpawnSettings.ActorRotator = FRotator(0, 0, 0);
+	PowerupSpawner->SpawnSettings.SpawnIntervalBase = 5;
+	PowerupSpawner->SpawnSettings.SpawnIntervalRandomOffset = 1;
 
 	// Create and assign default value for Obstacle
 	ObstacleSpawner = CreateDefaultSubobject<URunnerSpawnObjectsComponent>(TEXT("ObstacleSpawner"));
-	ObstacleSpawner->SpawnSettings.bEnabled = true;
-	ObstacleSpawner->SpawnSettings.ActorNum = 2;
+	ObstacleSpawner->SpawnSettings.ActorNum = 1;
 	ObstacleSpawner->SpawnSettings.PointsPerLane = 2;
 	ObstacleSpawner->SpawnSettings.LaneYOffsets = {-325, 0, 325};
 	ObstacleSpawner->SpawnSettings.XOffset = 50;
 	ObstacleSpawner->SpawnSettings.ZOffset = 0;
-	ObstacleSpawner->SpawnSettings.ActorRotator = FRotator(0, 0, 0);
 
 	// Create and assign default value for Moving Obstacle
 	MovingObstacleSpawner = CreateDefaultSubobject<URunnerSpawnObjectsComponent>(TEXT("MovingObstacleSpawner"));
-	MovingObstacleSpawner->SpawnSettings.bEnabled = true;
 	MovingObstacleSpawner->SpawnSettings.ActorNum = 1;
 	MovingObstacleSpawner->SpawnSettings.PointsPerLane = 2;
 	MovingObstacleSpawner->SpawnSettings.LaneYOffsets = {-325, 0, 325};
 	MovingObstacleSpawner->SpawnSettings.XOffset = 50;
 	MovingObstacleSpawner->SpawnSettings.ZOffset = 0;
 	MovingObstacleSpawner->SpawnSettings.ActorRotator = FRotator(0, 180, 0);
+	MovingObstacleSpawner->SpawnSettings.SpawnIntervalBase = 8;
+	MovingObstacleSpawner->SpawnSettings.SpawnIntervalRandomOffset = 2;
 }
 
 void ARunnerFloorActor::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
+	//UE_LOG(LogTemp, Display, TEXT("ARunnerFloorActor::OnConstruction"));
 
-	UE_LOG(LogTemp, Display, TEXT("ARunnerFloorActor::OnConstruction"));
-	if (MovingObstacleSpawner)
-	{
-		MovingObstacleSpawner->SpawnObjects(FloorComponent);
-	}
-	if (ObstacleSpawner)
-	{
-		ObstacleSpawner->SpawnObjects(FloorComponent);
-	}
-	if (PowerupSpawner)
-	{
-		PowerupSpawner->SpawnObjects(FloorComponent);
-	}
-	if (CoinSpawner)
-	{
-		CoinSpawner->SpawnObjects(FloorComponent);
-	}
+	SpawnAllObjects();
 }
 
 void ARunnerFloorActor::PostEditMove(bool bFinished)
@@ -147,10 +130,43 @@ void ARunnerFloorActor::HandleBoxCollision_Implementation(AActor* OverlappingAct
 		UE_LOG(LogTemp, Warning, TEXT("GameMode or RunnerFloorManager is NULL!"));
 	}
 
-	// Increase Speed
+	// Update Speed
 	IncreaseSpeed(OverlappingActor, SpeedIncrement, MaxSpeed);
 	
 	// Update Score
+	IncreaseScore(ScoreIncrement);
+}
+
+void ARunnerFloorActor::SpawnAllObjects()
+{
+	if (MovingObstacleSpawner)
+	{
+		// Moving Obstacles are not spawned on every floor
+		int32 SpawnIntervalBase = MovingObstacleSpawner->SpawnSettings.SpawnIntervalBase;
+		int32 SpawnIntervalRandomOffset = MovingObstacleSpawner->SpawnSettings.SpawnIntervalRandomOffset;
+		if (ShouldSpawnObjects(SpawnIntervalBase, SpawnIntervalRandomOffset))
+		{
+			MovingObstacleSpawner->SpawnObjects(FloorComponent);
+		}
+	}
+	if (ObstacleSpawner)
+	{
+		ObstacleSpawner->SpawnObjects(FloorComponent);
+	}
+	if (PowerupSpawner)
+	{
+		// Powerups are not spawned on every floor
+		int32 SpawnIntervalBase = PowerupSpawner->SpawnSettings.SpawnIntervalBase;
+		int32 SpawnIntervalRandomOffset = PowerupSpawner->SpawnSettings.SpawnIntervalRandomOffset;
+		if (ShouldSpawnObjects(SpawnIntervalBase, SpawnIntervalRandomOffset))
+		{
+			PowerupSpawner->SpawnObjects(FloorComponent);
+		}
+	}
+	if (CoinSpawner)
+	{
+		CoinSpawner->SpawnObjects(FloorComponent);
+	}
 }
 
 bool ARunnerFloorActor::ShouldSpawnObjects(int32 SpawnIntervalBase, int32 SpawnIntervalRandomOffset) const
@@ -165,20 +181,22 @@ bool ARunnerFloorActor::ShouldSpawnObjects(int32 SpawnIntervalBase, int32 SpawnI
 	return false;
 }
 
-
-
 void ARunnerFloorActor::IncreaseSpeed(AActor* Actor, float Increment, float Max)
 {
 	ARunnerCharacter* MyCharacter = Cast<ARunnerCharacter>(Actor);
-	if (!MyCharacter)
-	{
-		return;
-	}
-	
-	if (MyCharacter->GetCharacterMovement())
+	if (MyCharacter && MyCharacter->GetCharacterMovement())
 	{
 		float NewSpeed = MyCharacter->GetCharacterMovement()->MaxWalkSpeed + Increment;
 		
 		MyCharacter->GetCharacterMovement()->MaxWalkSpeed = FMath::Min(NewSpeed, Max);
+	}
+}
+
+void ARunnerFloorActor::IncreaseScore(int32 Amount)
+{
+	ARunnerGameMode* MyGameMode = Cast<ARunnerGameMode>(GetWorld()->GetAuthGameMode());
+	if (MyGameMode && MyGameMode->RunnerScoreManager)
+	{
+		MyGameMode->RunnerScoreManager->AddScore(Amount);
 	}
 }

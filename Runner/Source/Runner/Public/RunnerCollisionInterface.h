@@ -22,9 +22,9 @@ class RUNNER_API IRunnerCollisionInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent)
 	FVector GetAttachLocation() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	UFUNCTION(BlueprintNativeEvent)
 	void HandleBoxCollision(AActor* OverlappingActor);
 };

@@ -5,27 +5,21 @@
 #include "CoreMinimal.h"
 #include "RunnerCollisionInterface.h"
 #include "GameFramework/Actor.h"
-#include "RunnerFloorActor.generated.h"
+#include "RunnerSkylineActor.generated.h"
 
 class UBoxComponent;
 class UArrowComponent;
 class URunnerSpawnObjectsComponent;
 
-/**
- * Manages individual floor tiles in the runner game.
- * Handles spawning of obstacles, coins, power-ups, and managing player collision events.
- */
 UCLASS()
-class RUNNER_API ARunnerFloorActor : public AActor, public IRunnerCollisionInterface
+class RUNNER_API ARunnerSkylineActor : public AActor, public IRunnerCollisionInterface
 {
 	GENERATED_BODY()
 	
 public:	
-	ARunnerFloorActor();
+	ARunnerSkylineActor();
 
 	virtual void OnConstruction(const FTransform& Transform) override;
-
-	virtual void PostEditMove(bool bFinished) override;
 
 protected:
 	virtual void BeginPlay() override;
@@ -48,9 +42,13 @@ public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr<UArrowComponent> AttachpointArrow;
 
-	/** FloorComponent representing the floor */
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	TObjectPtr<UChildActorComponent> FloorComponent;
+	/** FloorComponent representing the skyline on the left */
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	TObjectPtr<UChildActorComponent> LeftSkyline;
+	
+	/** FloorComponent representing the skyline on the right */
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	TObjectPtr<UChildActorComponent> RightSkyline;
 
 protected:
 	/**
@@ -74,68 +72,22 @@ public:
 	/** Handles actions triggered when the player collides with the BoxCollision component. */
 	UFUNCTION(BlueprintCallable)
 	virtual void HandleBoxCollision_Implementation(AActor* OverlappingActor) override;
-
+	
 /**
  *  -----------------------------------------------
  *   Spawn Objects
  *  -----------------------------------------------
  */
 public:
-	/** Component to spawn Coin */
+	/** Component to spawn buildings on the left side */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Spawner Settings")
-	TObjectPtr<URunnerSpawnObjectsComponent> CoinSpawner;
+	TObjectPtr<URunnerSpawnObjectsComponent> LeftSpawner;
 
-	/** Component to spawn Powerup */
+	/** Component to spawn buildings on the right side */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Spawner Settings")
-	TObjectPtr<URunnerSpawnObjectsComponent> PowerupSpawner;
-
-	/** Component to spawn Obstacle */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Spawner Settings")
-	TObjectPtr<URunnerSpawnObjectsComponent> ObstacleSpawner;
-
-	/** Component to spawn Moving Obstacle */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Spawner Settings")
-	TObjectPtr<URunnerSpawnObjectsComponent> MovingObstacleSpawner;
+	TObjectPtr<URunnerSpawnObjectsComponent> RightSpawner;
 
 	/** Spawn all objects based on constraints */
 	UFUNCTION(BlueprintCallable)
 	void SpawnAllObjects();
-	
-protected:
-	/** Return true if objects should spawn */
-	UFUNCTION(BlueprintCallable)
-	bool ShouldSpawnObjects(int32 SpawnIntervalBase, int32 SpawnIntervalRandomOffset) const;
-	
-/**
- * -----------------------------------------------
- *  Player Speed Adjustment
- * -----------------------------------------------
- */
-public:
-	/** The increment to player speed after passing a floor tile. */
-	UPROPERTY(EditAnywhere, Category = "Default|Speed Settings")
-	float SpeedIncrement = 10;
-
-	/** The maximum speed the player can reach. */
-	UPROPERTY(EditAnywhere, Category = "Default|Speed Settings")
-	float MaxSpeed = 1500;
-
-protected:
-	/** Increases the player's speed by the specified increment, capping it at the maximum speed. */
-	UFUNCTION(BlueprintCallable)
-	void IncreaseSpeed(AActor* Actor, float Increment, float Max);
-
-/**
- * -----------------------------------------------
- *  Player Score Update
- * -----------------------------------------------
- */
-public:
-	/** The score increment when passing a tile */
-	UPROPERTY(EditAnywhere, Category = "Default|Score Settings")
-	int32 ScoreIncrement = 1;
-
-protected:
-	UFUNCTION(BlueprintCallable)
-	void IncreaseScore(int32 Amount);
 };

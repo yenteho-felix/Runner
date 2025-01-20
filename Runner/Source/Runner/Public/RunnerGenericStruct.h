@@ -14,9 +14,20 @@ struct FSpawnSettings
 {
 	GENERATED_BODY()
 
+	FSpawnSettings()
+		: bEnabled(true)
+		, ActorNum(1)
+		, PointsPerLane(6)
+		, LaneYOffsets({-325, 0, 325})
+		, XOffset(0)
+		, ZOffset(0)
+		, ActorRotator(FRotator::ZeroRotator)
+		, SpawnIntervalBase(1)
+		, SpawnIntervalRandomOffset(0) {}
+
 	/** Enable or disable object spawning */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
-	bool bEnabled = true;
+	bool bEnabled;
 
 	/** The actor classes to spawn */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
@@ -24,35 +35,35 @@ struct FSpawnSettings
 
 	/** The number of actors to spawn */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
-	int32 ActorNum = 1;
+	int32 ActorNum;
 
 	/** Spawn points per lane */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
-	int32 PointsPerLane = 6;
+	int32 PointsPerLane;
 
 	/** Y-axis Lane offsets for spawn position */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
-	TArray<float> LaneYOffsets = {-325, 0, 325};
+	TArray<float> LaneYOffsets;
 	
 	/** X-axis offset for spawn position */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
-	int32 XOffset = 0;
+	int32 XOffset;
 
 	/** Z-axis offset for spawn position */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
-	int32 ZOffset = 0;
+	int32 ZOffset;
 
 	/** Rotation to apply to spawned actors */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
-	FRotator ActorRotator = FRotator::ZeroRotator;
+	FRotator ActorRotator;
 
 	/** Define the number of tiles that must be passed before the item is spawned. */
 	UPROPERTY(EditAnywhere, Category = "Spawn Settings")
-	int SpawnIntervalBase = 1;
+	int SpawnIntervalBase;
 	
 	/** Define the random spawn offset */
 	UPROPERTY(EditAnywhere, Category = "Spawn Settings")
-	int SpawnIntervalRandomOffset = 0;
+	int SpawnIntervalRandomOffset;
 };
 
 /**

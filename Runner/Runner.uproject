@@ -12,6 +12,15 @@
 				"Engine",
 				"CoreUObject"
 			]
+		},
+		{
+			"Name": "LoadingScreenModule",
+			"Type": "Runtime",
+			"LoadingPhase": "PreLoadingScreen",
+			"AdditionalDependencies": [
+				"Slate",
+				"SlateCore"
+			]
 		}
 	],
 	"Plugins": [

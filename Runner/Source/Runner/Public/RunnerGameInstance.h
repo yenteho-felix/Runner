@@ -9,6 +9,7 @@
 #include "RunnerGameInstance.generated.h"
 
 class URunnerSaveGame;
+
 /**
  * 
  */
@@ -17,12 +18,13 @@ class URunnerGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 
-	/*
-	 * Game Progress
-	 */
 public:
 	virtual void Init() override;
 	
+/**
+ *  Game Progress
+ */
+public:
 	UFUNCTION(BlueprintCallable)
 	void SetTotalCoins(int32 Value) const;
 	
@@ -51,10 +53,17 @@ protected:
 	
 	void SaveGameToSlot(URunnerSaveGame* SaveGameObject, const FString& SlotName, const int32 UserIndex) const;
 
-	/*
-	 * Character Selected by Player
-	 */
+/**
+ *  Character Selected by Player
+ */
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere);
 	TSubclassOf<ACharacter> PlayerCharacterClass;
+
+/**
+ *  Loading Screen
+ */
+public:
+	void BeginLoadingScreen(const FString& InMapName);
+	void EndLoadingScreen(UWorld* InLoadedWorld);
 };

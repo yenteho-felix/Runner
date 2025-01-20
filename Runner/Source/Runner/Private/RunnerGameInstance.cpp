@@ -2,6 +2,8 @@
 
 
 #include "RunnerGameInstance.h"
+
+#include "LoadingScreenModule.h"
 #include "RunnerSaveGame.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
@@ -9,7 +11,8 @@
 void URunnerGameInstance::Init()
 {
 	Super::Init();
-	
+
+	// Save or retrieve data in save game
 	if (!UGameplayStatics::DoesSaveGameExist(MySlotName, MyUserIndex))
 	{
 		CreateSaveGameObject(URunnerSaveGame::StaticClass());
@@ -18,6 +21,12 @@ void URunnerGameInstance::Init()
 	{
 		LoadGameFromSlot(MySlotName, MyUserIndex);
 	}
+
+	// Bind the PreLoadMap delegate to function handler
+	FCoreUObjectDelegates::PreLoadMap.AddUObject(this, &URunnerGameInstance::BeginLoadingScreen);
+
+	// Bind the PostLoadMapWithWorld delegate to function handler
+	FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &URunnerGameInstance::EndLoadingScreen);
 }
 
 void URunnerGameInstance::SetTotalCoins(const int32 Value) const
@@ -73,4 +82,25 @@ void URunnerGameInstance::SaveGameToSlot(URunnerSaveGame* SaveGameObject, const 
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Failed to write save game to slot"));
 	}
+}
+
+void URunnerGameInstance::BeginLoadingScreen(const FString& InMapName)
+{
+	UE_LOG(LogTemp, Warning, TEXT("URunnerGameInstance::BeginLoadingScreen: %s"), *InMapName);
+
+	// Try to get the loading screen module
+	FLoadingScreenModule* LoadingScreenModule = FModuleManager::LoadModulePtr<FLoadingScreenModule>("LoadingScreenModule");
+	if (LoadingScreenModule)
+	{
+		LoadingScreenModule->StartLoadingScreen();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("URunnerGameInstance::BeginLoadingScreen: LoadingScreenModule not found"));
+	}
+}
+
+void URunnerGameInstance::EndLoadingScreen(UWorld* InLoadedWorld)
+{
+	UE_LOG(LogTemp, Warning, TEXT("URunnerGameInstance::EndLoadingScreen: %s"), *InLoadedWorld->GetName());
 }

@@ -92,7 +92,7 @@ void URunnerGameInstance::BeginLoadingScreen(const FString& InMapName)
 	FLoadingScreenModule* LoadingScreenModule = FModuleManager::LoadModulePtr<FLoadingScreenModule>("LoadingScreenModule");
 	if (LoadingScreenModule)
 	{
-		LoadingScreenModule->StartLoadingScreen();
+		LoadingScreenModule->StartLoadingScreen(InMapName);
 	}
 	else
 	{

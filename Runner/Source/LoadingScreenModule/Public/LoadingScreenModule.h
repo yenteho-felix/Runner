@@ -17,7 +17,7 @@ public:
     virtual bool IsGameModule() const override;
 
     /** Shows the loading screen during the level transitions */
-    virtual void StartLoadingScreen();
+    virtual void StartLoadingScreen(const FString& MapName);
 
     /** Called when module is ended */
     virtual void ShutdownModule() override;

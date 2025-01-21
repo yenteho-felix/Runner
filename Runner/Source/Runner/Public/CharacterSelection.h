@@ -36,11 +36,11 @@ public:
  * Character Selection
  */
 public:
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Character Selection")
 	TArray<UClass*> CharacterPawnArray;
 
 	// Array of Skeletal Meshes
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Character Selection")
 	TArray<USkeletalMesh*> CharacterMeshArray;
 
 	UFUNCTION(BlueprintCallable)

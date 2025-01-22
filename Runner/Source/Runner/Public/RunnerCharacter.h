@@ -7,6 +7,10 @@
 #include "Logging/LogMacros.h"
 #include "RunnerCharacter.generated.h"
 
+class URunnerGameInstance;
+class ARunnerGameMode;
+class USaveGame;
+class ARunnerPlayerController;
 class USpringArmComponent;
 class UCameraComponent;
 
@@ -17,39 +21,162 @@ class ARunnerCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+public:
+	ARunnerCharacter();
+
+	virtual void Tick(float DeltaTime) override;
+			
+protected:
+	virtual void BeginPlay() override;
+
+/**
+ *  -----------------------------------
+ *  Basic Components
+ *  -----------------------------------
+ */ 
+public:
 	/** Camera boom positioning the camera behind the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default|Camera", meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
 
 	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default|Camera", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-
-public:
-	ARunnerCharacter();
-			
-protected:
-	// To add mapping context
-	virtual void BeginPlay();
-
-public:
+	
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
-
-/* Slide Animations */
+	
+/**
+ *  -----------------------------------
+ *  Player Movement
+ *  -----------------------------------
+ */
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Animation")
+	/** Variable to indicate if player is currently sliding */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Animation")
 	bool bIsSliding = false;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slide Animation")
+
+	/** Variable to define the length of sliding animation */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Animation")
 	float AnimationLength = 1;
 
+	/** Variable to indicate if player is currently switching lane */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Animation")
+	bool bIsSwitchingLane = false;
+	
+	/** Switch lane implemented in blueprint since we like to use time module to slowing shift character position */
+	UFUNCTION(BlueprintImplementableEvent)
+	void SwitchLane(int32 LandIndex);
+	
+	/** Start sliding */
 	void StartSlide();
+	
+protected:
+	/** Timer handle for the sliding animation */
+	FTimerHandle SlidingTimerHandle;
+	
+	/** Timer call back function to handle settings when sliding finished */
 	void EndSlide();
 
+	/** Moves the player forward */
+	void MoveForward();
+	
+/**
+ *  -----------------------------------
+ *  Gameloop
+ *  -----------------------------------
+ */
+public:
+	/** Variable to indicate if player is dead */
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Default|GameLoop")
+	bool bIsDead;
+
+	/** Handle steps requires to resume game play */
+	UFUNCTION(BlueprintCallable)
+	void ResumeGameplay();
+
+	/** Handle activities when player is dead */
+	UFUNCTION(BlueprintCallable)
+	void PlayerDeath();
+	
 protected:
-	FTimerHandle SlidingTimerHandle;
+	/** Pointer to game mode */
+	TObjectPtr<ARunnerGameMode> MyGameMode;
+
+	/** Pointer to game instance */
+	TObjectPtr<URunnerGameInstance> MyGameInstance;
+
+	/** Timer handle for the pause delay */
+	FTimerHandle TimerHandle_PauseGame;
+	
+	/** Respawn player to the desire lane at the same x-axis */
+	UFUNCTION(BlueprintCallable)
+	void RespawnPlayerAfterDeath(float LanePositionY);
+
+	/** Toggle player input */
+	UFUNCTION(BlueprintCallable)
+	void TogglePlayerInput(bool bEnabled);
+	
+	/** Timer callback function to pause the game */
+	void PauseGameAfterDelay() const;
+
+/**
+ *  -----------------------------------
+ *  Widget
+ *  -----------------------------------
+ */
+public:
+	/** Variable to store game over widget */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Default|Widget")
+	TSubclassOf<UUserWidget> GameOverWidgetClass;
+
+	/** Variable to store game play widget */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Default|Widget")
+	TSubclassOf<UUserWidget> GamePlayWidgetClass;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Default|Widget")
+	TSubclassOf<UUserWidget> PauseMenuWidgetClass;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Default|Widget")
+	TSubclassOf<UUserWidget> ResumePopupWidgetClass;
+
+	UFUNCTION(BlueprintCallable)
+	void TogglePauseMenu();
+
+	UFUNCTION(BlueprintCallable)
+	void ShowResumePopup();
+
+private:
+	/** Variable to store pause menu widget instance */
+	UPROPERTY()
+	TObjectPtr<UUserWidget> PauseMenuWidgetInstance = nullptr;
+
+	/** Add give widget class to the viewport */
+	void AddWidgetToViewPort(const TSubclassOf<UUserWidget>& InWidgetClass, bool bShowMouseCursor) const;
+
+/**
+ *  -----------------------------------
+ *  Game Features
+ *  -----------------------------------
+ */
+public:
+	/** Variable to indicate if player holds magnet */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Features")
+	bool bIsMagnetActive = false;
+	
+/**
+ *  -----------------------------------
+ *  Game Record
+ *  -----------------------------------
+ */
+public:
+	/** Please add a function description */
+	void SaveHighScore() const;
+	
+	/** Please add a function description */
+	void SaveTotalCoins() const;
 };
 

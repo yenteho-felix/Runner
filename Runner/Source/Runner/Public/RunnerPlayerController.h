@@ -11,7 +11,7 @@ class UInputMappingContext;
 class UUserWidget;
 
 /**
- * 
+ *  Player controller for Runner project
  */
 UCLASS()
 class RUNNER_API ARunnerPlayerController : public APlayerController
@@ -35,6 +35,10 @@ protected:
 	UInputAction* SlideAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* PauseAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* LeftKeyAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* RightKeyAction;
 
 	virtual void SetupInputComponent() override;
 
@@ -42,18 +46,7 @@ protected:
 	void Look(const FInputActionValue& Value);
 	void Jump();
 	void Slide();
-
-/* UI */
-public:
-	void ShowPauseMenu();
-	void HidePauseMenu();
-	UFUNCTION(BlueprintCallable)
+	void SwitchLaneLeft();
+	void SwitchLaneRight();
 	void TogglePauseMenu();
-	
-protected:
-	UPROPERTY()
-	UUserWidget* PauseMenuWidget;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<UUserWidget> PauseMenuWidgetClass;
 };

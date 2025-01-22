@@ -295,6 +295,19 @@ void ARunnerCharacter::SaveTotalCoins() const
 	MyGameInstance->SetTotalCoins(CurrentCoins);
 }
 
+void ARunnerCharacter::RetrievePlayerCharacter()
+{
+	if (!MyGameInstance)
+	{
+		return;
+	}
+
+	if (MyGameInstance->PlayerCharacterClass)
+	{
+		
+	}
+}
+
 void ARunnerCharacter::RespawnPlayerAfterDeath(float InLanePositionY)
 {
 	// Retrieve X-axis location of player

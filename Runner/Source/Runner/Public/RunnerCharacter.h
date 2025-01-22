@@ -111,6 +111,10 @@ protected:
 
 	/** Timer handle for the pause delay */
 	FTimerHandle TimerHandle_PauseGame;
+
+	/** Retrieve player character from game instance */
+	UFUNCTION()
+	void RetrievePlayerCharacter();
 	
 	/** Respawn player to the desire lane at the same x-axis */
 	UFUNCTION(BlueprintCallable)
@@ -164,8 +168,16 @@ private:
  */
 public:
 	/** Variable to indicate if player holds magnet */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Features")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Features|Magnet")
 	bool bIsMagnetActive = false;
+
+	/** Variable to indicate how much time left for magnet effect */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Features|Magnet")
+	float MagnetTimer = 0;
+
+	/** Variable to indicate the duration of magnet effect */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Features|Magnet")
+	float MagnetDuration = 0;
 	
 /**
  *  -----------------------------------

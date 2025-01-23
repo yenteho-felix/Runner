@@ -13,17 +13,28 @@ UCLASS()
 class RUNNER_API URunnerScoreManager : public UActorComponent
 {
 	GENERATED_BODY()
+	
+	virtual void BeginPlay() override;
 
 public:
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Default|ScoreManager")
-	int32 CurrentScore = 0;
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Default|ScoreManager")
+	int32 HighScore;
+	
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Default|ScoreManager")
+	int32 CurrentScore;
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Default|ScoreManager")
-	int32 CurrentCoins = 0;
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Default|ScoreManager")
+	int32 CurrentCoins;
 
 	UFUNCTION(BlueprintCallable)
-	void AddScore(int32 Amount);
+	void AddScore(int32 Value);
 
 	UFUNCTION(BlueprintCallable)
-	void AddCoins(int32 Amount);
+	void AddCoins(int32 Value);
+
+	UFUNCTION(BlueprintCallable)
+	void SaveHighScore();
+
+	UFUNCTION(BlueprintCallable)
+	void SaveTotalCoin();
 };

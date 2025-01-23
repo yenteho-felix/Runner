@@ -4,7 +4,6 @@
 
 #include "RunnerGameInstance.h"
 #include "RunnerGameMode.h"
-#include "RunnerPlayerController.h"
 #include "RunnerScoreManager.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
@@ -20,9 +19,6 @@
 #include "Blueprint/UserWidget.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
-
-//////////////////////////////////////////////////////////////////////////
-// ARunnerCharacter
 
 ARunnerCharacter::ARunnerCharacter()
 {
@@ -70,19 +66,20 @@ void ARunnerCharacter::Tick(float DeltaTime)
 
 void ARunnerCharacter::BeginPlay()
 {
-	// Call the base class  
 	Super::BeginPlay();
 
-	// Initiate variables
+	// Get game mode and game instance
 	MyGameMode = Cast<ARunnerGameMode>(GetWorld()->GetAuthGameMode());
 	MyGameInstance = Cast<URunnerGameInstance>(GetGameInstance());
-	bIsDead = false;
 
 	// Add game play widget
 	if (GamePlayWidgetClass)
 	{
 		AddWidgetToViewPort(GamePlayWidgetClass, false);
 	}
+
+	// Spawn character
+	SpawnSelectedCharacter();
 }
 
 void ARunnerCharacter::StartSlide()
@@ -162,8 +159,8 @@ void ARunnerCharacter::PlayerDeath()
 	}
 	
 	// Save current data
-	SaveHighScore();
-	SaveTotalCoins();
+	MyGameMode->RunnerScoreManager->SaveTotalCoin();
+	MyGameMode->RunnerScoreManager->SaveHighScore();
 	
 	// Start a timer to call PauseGameAfterDelay after 1 second
 	GetWorld()->GetTimerManager().SetTimer(
@@ -178,6 +175,25 @@ void ARunnerCharacter::PlayerDeath()
 void ARunnerCharacter::PauseGameAfterDelay() const
 {
 	UGameplayStatics::SetGamePaused(GetWorld(), true);
+}
+
+void ARunnerCharacter::SpawnObstacleDestroyer(const FTransform& InTransform) const
+{
+	// Use StaticLoadClass to dynamically load the blueprint class
+	UClass* ObstacleDestroyerBP = StaticLoadClass(
+		AActor::StaticClass(),
+		nullptr,
+		TEXT("/Game/Runner/Blueprints/Actors/BP_ObstacleDestroyer.BP_ObstacleDestroyer_C")
+	);
+
+	if (ObstacleDestroyerBP != nullptr)
+	{
+		AActor* SpawnedActor = GetWorld()->SpawnActor<AActor>(ObstacleDestroyerBP, InTransform);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Cannot find SpawnObstacleDestroyerBP"));
+	}
 }
 
 void ARunnerCharacter::TogglePauseMenu()
@@ -224,8 +240,7 @@ void ARunnerCharacter::TogglePauseMenu()
 		// Unpause game
 		if (APlayerController* MyPlayerController = Cast<APlayerController>(GetController()))
 		{
-			FInputModeGameOnly InputMode;
-			MyPlayerController->SetInputMode(InputMode);
+			MyPlayerController->SetInputMode(FInputModeGameOnly());
 			MyPlayerController->SetShowMouseCursor(false);
 			MyPlayerController->SetPause(false);
 		}
@@ -259,52 +274,31 @@ void ARunnerCharacter::AddWidgetToViewPort(const TSubclassOf<UUserWidget>& InWid
 	}
 }
 
-void ARunnerCharacter::SaveHighScore() const
+void ARunnerCharacter::SpawnSelectedCharacter()
 {
-	if (!MyGameMode)
+	if (!MyGameInstance || !MyGameInstance->PlayerCharacterClass)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("MyGameInstance or MyGameInstance->PlayerCharacterClass is NULL"));
 		return;
 	}
 
-	if (!MyGameInstance)
+	if (APlayerController* MyPlayerController = Cast<APlayerController>(GetController()))
 	{
-		return;
-	}
+		// Get the current location and rotation of the character
+		FVector SpawnLocation = GetActorLocation();
+		FRotator SpawnRotation = GetActorRotation();
 
-	const int32 CurrentScore = MyGameMode->RunnerScoreManager->CurrentScore;
-	const int32 HighScore = MyGameInstance->GetHighScore();
-	if (CurrentScore > HighScore)
-	{
-		MyGameInstance->SetHighScore(CurrentScore);
-	}
-}
+		// Destroy the current character
+		this->Destroy();
 
-void ARunnerCharacter::SaveTotalCoins() const
-{
-	if (!MyGameMode)
-	{
-		return;
-	}
+		// Spawn the selected character class
+		ARunnerCharacter* NewCharacter = GetWorld()->SpawnActor<ARunnerCharacter>(MyGameInstance->PlayerCharacterClass, SpawnLocation, SpawnRotation);
+		if (NewCharacter)
+		{
+			MyPlayerController->Possess(NewCharacter);
 
-	if (!MyGameInstance)
-	{
-		return;
-	}
-
-	const int32 CurrentCoins = MyGameMode->RunnerScoreManager->CurrentCoins;
-	MyGameInstance->SetTotalCoins(CurrentCoins);
-}
-
-void ARunnerCharacter::RetrievePlayerCharacter()
-{
-	if (!MyGameInstance)
-	{
-		return;
-	}
-
-	if (MyGameInstance->PlayerCharacterClass)
-	{
-		
+			MyPlayerController->SetInputMode(FInputModeGameOnly());
+		}
 	}
 }
 
@@ -321,6 +315,9 @@ void ARunnerCharacter::RespawnPlayerAfterDeath(float InLanePositionY)
 	FVector MeshLocation = FVector (0, 0, -90);
 	FRotator MeshRotation = FRotator(0.0f, -90.0f, 0.0f);
 	GetMesh()->SetRelativeLocationAndRotation(MeshLocation, MeshRotation, false, nullptr, ETeleportType::TeleportPhysics);
+
+	// remove obstacles at spawned location
+	SpawnObstacleDestroyer(GetActorTransform());
 }
 
 void ARunnerCharacter::TogglePlayerInput(bool bEnabled)

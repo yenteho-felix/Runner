@@ -5,7 +5,6 @@
 
 #include "LoadingScreenModule.h"
 #include "RunnerSaveGame.h"
-#include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 
 void URunnerGameInstance::Init()
@@ -22,6 +21,10 @@ void URunnerGameInstance::Init()
 		LoadGameFromSlot(MySlotName, MyUserIndex);
 	}
 
+	// Retrieve data from SaveGame file
+	CachedTotalCoins = GetTotalCoinsFromSaveGame();
+	CachedHighScore = GetHighScoreFromSaveGame();
+
 	// Bind the PreLoadMap delegate to function handler
 	FCoreUObjectDelegates::PreLoadMap.AddUObject(this, &URunnerGameInstance::BeginLoadingScreen);
 
@@ -29,24 +32,27 @@ void URunnerGameInstance::Init()
 	FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &URunnerGameInstance::EndLoadingScreen);
 }
 
-void URunnerGameInstance::SetTotalCoins(const int32 Value) const
+void URunnerGameInstance::SetTotalCoinsToSaveGame(const int32 Value) const
 {
 	MySaveGame->TotalCoins = Value;
 	SaveGameToSlot(MySaveGame, MySlotName, MyUserIndex);
 }
 
-int32 URunnerGameInstance::GetTotalCoins() const
+int32 URunnerGameInstance::GetTotalCoinsFromSaveGame() const
 {
 	return MySaveGame->TotalCoins;
 }
 
-void URunnerGameInstance::SetHighScore(const int32 Value) const
+void URunnerGameInstance::SetHighScoreToSaveGame(const int32 Value) const
 {
-	MySaveGame->HighScore = Value;
-	SaveGameToSlot(MySaveGame, MySlotName, MyUserIndex);
+	if (Value > MySaveGame->HighScore)
+	{
+		MySaveGame->HighScore = Value;
+		SaveGameToSlot(MySaveGame, MySlotName, MyUserIndex);
+	}
 }
 
-int32 URunnerGameInstance::GetHighScore() const
+int32 URunnerGameInstance::GetHighScoreFromSaveGame() const
 {
 	return MySaveGame->HighScore;
 }
@@ -86,7 +92,7 @@ void URunnerGameInstance::SaveGameToSlot(URunnerSaveGame* SaveGameObject, const 
 
 void URunnerGameInstance::BeginLoadingScreen(const FString& InMapName)
 {
-	UE_LOG(LogTemp, Warning, TEXT("URunnerGameInstance::BeginLoadingScreen: %s"), *InMapName);
+	UE_LOG(LogTemp, Display, TEXT("URunnerGameInstance::BeginLoadingScreen: %s"), *InMapName);
 
 	// Try to get the loading screen module
 	FLoadingScreenModule* LoadingScreenModule = FModuleManager::LoadModulePtr<FLoadingScreenModule>("LoadingScreenModule");
@@ -102,5 +108,5 @@ void URunnerGameInstance::BeginLoadingScreen(const FString& InMapName)
 
 void URunnerGameInstance::EndLoadingScreen(UWorld* InLoadedWorld)
 {
-	UE_LOG(LogTemp, Warning, TEXT("URunnerGameInstance::EndLoadingScreen: %s"), *InLoadedWorld->GetName());
+	UE_LOG(LogTemp, Display, TEXT("URunnerGameInstance::EndLoadingScreen: %s"), *InLoadedWorld->GetName());
 }

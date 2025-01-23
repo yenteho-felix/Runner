@@ -4,6 +4,7 @@
 #include "RunnerFloorActor.h"
 
 #include "RunnerCharacter.h"
+#include "RunnerGameInstance.h"
 #include "RunnerGameMode.h"
 #include "RunnerScoreManager.h"
 #include "RunnerSpawnObjectsComponent.h"
@@ -198,5 +199,9 @@ void ARunnerFloorActor::IncreaseScore(int32 Amount)
 	if (MyGameMode && MyGameMode->RunnerScoreManager)
 	{
 		MyGameMode->RunnerScoreManager->AddScore(Amount);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameMode or RunnerScoreManager is NULL!"));
 	}
 }

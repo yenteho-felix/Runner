@@ -25,17 +25,25 @@ public:
  *  Game Progress
  */
 public:
-	UFUNCTION(BlueprintCallable)
-	void SetTotalCoins(int32 Value) const;
+	/** Total coins of the player */
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	int32 CachedTotalCoins;
+
+	/** Highest score of all time */
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	int32 CachedHighScore;
 	
 	UFUNCTION(BlueprintCallable)
-	int32 GetTotalCoins() const;
+	void SetTotalCoinsToSaveGame(int32 Value) const;
+	
+	UFUNCTION(BlueprintCallable)
+	int32 GetTotalCoinsFromSaveGame() const;
 
 	UFUNCTION(BlueprintCallable)
-	void SetHighScore(int32 Value) const;
+	void SetHighScoreToSaveGame(int32 Value) const;
 	
 	UFUNCTION(BlueprintCallable)
-	int32 GetHighScore() const;
+	int32 GetHighScoreFromSaveGame() const;
 	
 protected:
 	UPROPERTY()
@@ -64,6 +72,9 @@ public:
  *  Loading Screen
  */
 public:
+	/** Function handler when loading screen starts */
 	void BeginLoadingScreen(const FString& InMapName);
+
+	/** Function handler when loading screen ends */
 	void EndLoadingScreen(UWorld* InLoadedWorld);
 };

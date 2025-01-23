@@ -16,6 +16,9 @@ class UCameraComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
+/**
+ *  Character class for Runner project
+ */
 UCLASS(config=Game)
 class ARunnerCharacter : public ACharacter
 {
@@ -43,10 +46,10 @@ public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Default|Camera", meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 	
-	/** Returns CameraBoom subobject **/
+	/** Returns CameraBoom subobject */
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	
-	/** Returns FollowCamera subobject **/
+	/** Returns FollowCamera subobject */
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	
 /**
@@ -92,7 +95,7 @@ protected:
 public:
 	/** Variable to indicate if player is dead */
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Default|GameLoop")
-	bool bIsDead;
+	bool bIsDead = false;
 
 	/** Handle steps requires to resume game play */
 	UFUNCTION(BlueprintCallable)
@@ -113,19 +116,19 @@ protected:
 	FTimerHandle TimerHandle_PauseGame;
 
 	/** Retrieve player character from game instance */
-	UFUNCTION()
-	void RetrievePlayerCharacter();
+	void SpawnSelectedCharacter();
 	
 	/** Respawn player to the desire lane at the same x-axis */
-	UFUNCTION(BlueprintCallable)
 	void RespawnPlayerAfterDeath(float LanePositionY);
 
 	/** Toggle player input */
-	UFUNCTION(BlueprintCallable)
 	void TogglePlayerInput(bool bEnabled);
 	
 	/** Timer callback function to pause the game */
 	void PauseGameAfterDelay() const;
+
+	/** To destroy any obstacles on the player respawn location*/
+	void SpawnObstacleDestroyer(const FTransform& InTransform) const;
 
 /**
  *  -----------------------------------
@@ -178,17 +181,5 @@ public:
 	/** Variable to indicate the duration of magnet effect */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Features|Magnet")
 	float MagnetDuration = 0;
-	
-/**
- *  -----------------------------------
- *  Game Record
- *  -----------------------------------
- */
-public:
-	/** Please add a function description */
-	void SaveHighScore() const;
-	
-	/** Please add a function description */
-	void SaveTotalCoins() const;
 };
 

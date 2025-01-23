@@ -274,6 +274,49 @@ void ARunnerCharacter::AddWidgetToViewPort(const TSubclassOf<UUserWidget>& InWid
 	}
 }
 
+void ARunnerCharacter::MagnetPowerupStart()
+{
+	bIsMagnetActive = true;
+
+	MagnetTimer = MagnetDuration;
+
+	// Broadcast the delegate
+	OnMagnetPowerupStart.Broadcast();
+	
+	// Start a timer to call update timer function
+	float TimerInterval = 0.5f;
+	GetWorld()->GetTimerManager().SetTimer(
+	TimerHandle_Magnet,
+	 FTimerDelegate::CreateUObject(this, &ARunnerCharacter::UpdateMagnetTimer, TimerInterval),
+	 TimerInterval,
+	 true 
+	);
+}
+
+void ARunnerCharacter::UpdateMagnetTimer(float DeltaTime)
+{
+	if (MagnetTimer > 0)
+	{
+		MagnetTimer -= DeltaTime;
+
+		if (MagnetTimer <= 0)
+		{
+			MagnetTimer = 0;
+			MagnetPowerupEnd();
+		}
+	}
+}
+
+void ARunnerCharacter::MagnetPowerupEnd()
+{
+	bIsMagnetActive = false;
+
+	GetWorld()->GetTimerManager().ClearTimer(TimerHandle_Magnet);
+
+	// Broadcast the delegate
+	OnMagnetPowerupEnd.Broadcast();
+}
+
 void ARunnerCharacter::SpawnSelectedCharacter()
 {
 	if (!MyGameInstance || !MyGameInstance->PlayerCharacterClass)

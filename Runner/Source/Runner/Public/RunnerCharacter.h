@@ -16,6 +16,12 @@ class UCameraComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
+/** Declare a multicast delegate for the MagnetPowerupStart event */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMagnetPowerupStart);
+
+/** Declare a multicast delegate for the MagnetPowerupEnd event */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMagnetPowerupEnd);
+
 /**
  *  Character class for Runner project
  */
@@ -180,6 +186,28 @@ public:
 
 	/** Variable to indicate the duration of magnet effect */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Features|Magnet")
-	float MagnetDuration = 0;
+	float MagnetDuration = 3;
+	
+	/** Expose the magnet powerup start delegate */
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnMagnetPowerupEnd OnMagnetPowerupStart;
+
+	/** Expose the magnet powerup end delegate */
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnMagnetPowerupEnd OnMagnetPowerupEnd;
+
+	/** Start magnet power up effect */
+	UFUNCTION(BlueprintCallable)
+	void MagnetPowerupStart();
+	
+protected:
+	/** Timer handler for the magnet active duration */
+	FTimerHandle TimerHandle_Magnet;
+
+	/** Update magnet timer variable based on given delta time*/
+	void UpdateMagnetTimer(float DeltaTime);
+
+	/** Reset variables when magnet power up effect end */
+	void MagnetPowerupEnd();
 };
 

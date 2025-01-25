@@ -172,6 +172,12 @@ void ARunnerFloorActor::SpawnAllObjects()
 
 bool ARunnerFloorActor::ShouldSpawnObjects(int32 SpawnIntervalBase, int32 SpawnIntervalRandomOffset) const
 {
+	// Always return true in editor mode for debugging
+	if (GetWorld() && !GetWorld()->IsGameWorld())
+	{
+		return true;
+	}
+	
 	ARunnerGameMode* MyGameMode = Cast<ARunnerGameMode>(GetWorld()->GetAuthGameMode());
 	if (MyGameMode && MyGameMode->RunnerFloorManager)
 	{

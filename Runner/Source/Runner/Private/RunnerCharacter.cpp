@@ -149,9 +149,17 @@ void ARunnerCharacter::SwitchLane(int32 LaneOffset)
 	
 	bIsSwitchingLane = true;
 
-	// Calculate location
+	// Get current location
 	FVector CurrentLocation = GetActorLocation();
-	FVector TargetLocation = FVector(GetActorLocation().X , LaneYOffsets[NewIndex], GetActorLocation().Z);
+	
+	// Adjust the target X position based on the player's speed and switch duration
+	float TargetX = CurrentLocation.X + (GetCharacterMovement()->Velocity.X * LaneSwitchDuration);
+
+	// Set target Y position based on lane offset position
+	float TargetY = LaneYOffsets[NewIndex];
+
+	// Set target location
+	FVector TargetLocation = FVector(TargetX , TargetY, GetActorLocation().Z);
 	LaneSwitchData = FLaneSwitchData(CurrentLocation, TargetLocation, NewIndex);
 
 	// Execute timeline for lane switch

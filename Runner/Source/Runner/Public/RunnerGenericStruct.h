@@ -67,7 +67,31 @@ struct FSpawnSettings
 };
 
 /**
- * 
+ * Data for handling lane switch locations
+ */
+USTRUCT()
+struct FLaneSwitchData
+{
+	GENERATED_BODY()
+
+	/** Start location of the lane switch */
+	FVector StartLocation;
+
+	/** Target location of the lane switch */
+	FVector EndLocation;
+
+	/** Target lane index */
+	int32 NewLaneIndex;
+
+	/** Constructor for initialization */
+	FLaneSwitchData(): NewLaneIndex(0) {}
+
+	FLaneSwitchData(const FVector& Start, const FVector& End, const int32 LaneIndex)
+		: StartLocation(Start), EndLocation(End), NewLaneIndex(LaneIndex) {}
+};
+
+/**
+ *  Generic Struct
  */
 class RUNNER_API RunnerGenericStruct
 {

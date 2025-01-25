@@ -61,7 +61,14 @@ void ARunnerCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	MoveForward();
+	// Make player move forward infinitely
+	AddMovementInput(GetActorForwardVector());
+
+	// Update the lane switch timeline, which controls the player's movement between lanes over time
+	if (LaneSwitchTimeline.IsPlaying())
+	{
+		LaneSwitchTimeline.TickTimeline(DeltaTime);
+	}
 }
 
 void ARunnerCharacter::BeginPlay()
@@ -80,6 +87,9 @@ void ARunnerCharacter::BeginPlay()
 
 	// Spawn character
 	SpawnSelectedCharacter();
+
+	// Initialize the land switch timeline
+	InitTimelineForLaneSwitch();
 }
 
 void ARunnerCharacter::StartSlide()
@@ -105,7 +115,7 @@ void ARunnerCharacter::StartSlide()
 		SlidingTimerHandle,
 		this,
 		&ARunnerCharacter::EndSlide,
-		AnimationLength,
+		SlidingDuration,
 		false);
 }
 
@@ -128,9 +138,58 @@ void ARunnerCharacter::EndSlide()
 	MyCapsuleComponent->SetCollisionResponseToChannel(ECC_Destructible, ECollisionResponse::ECR_Block);
 }
 
-void ARunnerCharacter::MoveForward()
+void ARunnerCharacter::SwitchLane(int32 LaneOffset)
 {
-	AddMovementInput(GetActorForwardVector());
+	// Ignore lane switch when player is at the edge
+	int32 NewIndex = FMath::Clamp(LaneIndex + LaneOffset, 0, LaneYOffsets.Num()-1);
+	if (NewIndex == LaneIndex)
+	{
+		return;
+	}
+	
+	bIsSwitchingLane = true;
+
+	// Calculate location
+	FVector CurrentLocation = GetActorLocation();
+	FVector TargetLocation = FVector(GetActorLocation().X , LaneYOffsets[NewIndex], GetActorLocation().Z);
+	LaneSwitchData = FLaneSwitchData(CurrentLocation, TargetLocation, NewIndex);
+
+	// Execute timeline for lane switch
+	if (LaneSwitchCurve)
+	{
+		LaneSwitchTimeline.SetPlayRate(1.0f / LaneSwitchDuration);
+		LaneSwitchTimeline.PlayFromStart();
+	}
+}
+
+void ARunnerCharacter::InitTimelineForLaneSwitch()
+{
+	if (LaneSwitchCurve)
+	{
+		FOnTimelineFloat TimelineProgress;
+		TimelineProgress.BindUFunction(this, FName("OnLaneSwitchProgress"));
+		LaneSwitchTimeline.AddInterpFloat(LaneSwitchCurve, TimelineProgress);
+
+		FOnTimelineEvent TimelineFinished;
+		TimelineFinished.BindUFunction(this, FName("OnLaneSwitchFinished"));
+		LaneSwitchTimeline.SetTimelineFinishedFunc(TimelineFinished);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("LaneSwitchCurve is NULL"))
+	}
+}
+
+void ARunnerCharacter::OnLaneSwitchProgress(float Value)
+{
+	FVector NewLocation = FMath::Lerp(LaneSwitchData.StartLocation, LaneSwitchData.EndLocation, Value);
+	SetActorLocation(NewLocation);
+}
+
+void ARunnerCharacter::OnLaneSwitchFinished()
+{
+	bIsSwitchingLane = false;
+	LaneIndex = LaneSwitchData.NewLaneIndex;
 }
 
 void ARunnerCharacter::ResumeGameplay()

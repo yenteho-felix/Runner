@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "RunnerGenericStruct.h"
+#include "Components/TimelineComponent.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "RunnerCharacter.generated.h"
@@ -57,32 +59,23 @@ public:
 	
 	/** Returns FollowCamera subobject */
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-	
 /**
  *  -----------------------------------
- *  Player Movement
+ *  Player Movement - Slide
  *  -----------------------------------
  */
 public:
 	/** Variable to indicate if player is currently sliding */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Animation")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Default|Movement|Slide")
 	bool bIsSliding = false;
 
 	/** Variable to define the length of sliding animation */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Animation")
-	float AnimationLength = 1;
-
-	/** Variable to indicate if player is currently switching lane */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Animation")
-	bool bIsSwitchingLane = false;
-	
-	/** Switch lane implemented in blueprint since we like to use time module to slowing shift character position */
-	UFUNCTION(BlueprintImplementableEvent)
-	void SwitchLane(int32 LandIndex);
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Default|Movement|Slide")
+	float SlidingDuration = 1;
 	
 	/** Start sliding */
 	void StartSlide();
-	
+
 protected:
 	/** Timer handle for the sliding animation */
 	FTimerHandle SlidingTimerHandle;
@@ -90,8 +83,52 @@ protected:
 	/** Timer call back function to handle settings when sliding finished */
 	void EndSlide();
 
-	/** Moves the player forward */
-	void MoveForward();
+/**
+ *  -----------------------------------
+ *  Player Movement - Switch Lane
+ *  -----------------------------------
+ */
+public:
+	/** LaneYOffsets index */
+	UPROPERTY(EditAnywhere, Category = "Default|Movement|SwitchLane")
+	int32 LaneIndex = 1;
+	
+	/** Y-axis Lane offsets for spawn position */
+	UPROPERTY(EditAnywhere, Category = "Default|Movement|SwitchLane")
+	TArray<float> LaneYOffsets = {-325, 0, 325};
+
+	/** Time it takes to switch lane in seconds */
+	UPROPERTY(EditAnywhere, Category = "Default|Movement|SwitchLane")
+	float LaneSwitchDuration = 0.2;
+
+	/** Curve for switch lane timeline */
+	UPROPERTY(EditAnywhere, Category = "Default|Movement|SwitchLane")
+	UCurveFloat* LaneSwitchCurve;
+	
+	/** Variable to indicate if player is currently switching lane */
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsSwitchingLane = false;
+
+	/** Switch lane based on the index update */
+	void SwitchLane(int32 LaneOffset);
+
+protected:
+	/** Struct to manage data required for lane switch */
+	FLaneSwitchData LaneSwitchData;
+	
+	/** Timeline for lane switch */
+	FTimeline LaneSwitchTimeline;
+
+	/** Initialize timelinefor lane switch */
+	void InitTimelineForLaneSwitch();
+	
+	/** Timeline progress for lane switch */
+	UFUNCTION()
+	void OnLaneSwitchProgress(float Value);
+
+	/** Event to handle when the lane switch timeline finishes */
+	UFUNCTION()
+	void OnLaneSwitchFinished();
 	
 /**
  *  -----------------------------------
@@ -100,7 +137,7 @@ protected:
  */
 public:
 	/** Variable to indicate if player is dead */
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, Category="Default|GameLoop")
+	UPROPERTY(BlueprintReadWrite)
 	bool bIsDead = false;
 
 	/** Handle steps requires to resume game play */
@@ -177,11 +214,11 @@ private:
  */
 public:
 	/** Variable to indicate if player holds magnet */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Features|Magnet")
+	UPROPERTY(BlueprintReadWrite)
 	bool bIsMagnetActive = false;
 
 	/** Variable to indicate how much time left for magnet effect */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Features|Magnet")
+	UPROPERTY(BlueprintReadWrite)
 	float MagnetTimer = 0;
 
 	/** Variable to indicate the duration of magnet effect */

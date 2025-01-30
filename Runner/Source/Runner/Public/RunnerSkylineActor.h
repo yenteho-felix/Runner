@@ -44,11 +44,11 @@ public:
 
 	/** FloorComponent representing the skyline on the left */
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
-	TObjectPtr<UChildActorComponent> LeftSkyline;
+	TObjectPtr<UChildActorComponent> LeftGround;
 	
 	/** FloorComponent representing the skyline on the right */
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
-	TObjectPtr<UChildActorComponent> RightSkyline;
+	TObjectPtr<UChildActorComponent> RightGround;
 
 protected:
 	/**
@@ -79,13 +79,21 @@ public:
  *  -----------------------------------------------
  */
 public:
-	/** Component to spawn buildings on the left side */
+	/** Component to spawn objects group 1 on the left side */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Spawner Settings")
-	TObjectPtr<URunnerSpawnObjectsComponent> LeftSpawner;
+	TObjectPtr<URunnerSpawnObjectsComponent> LeftSpawner1;
 
-	/** Component to spawn buildings on the right side */
+	/** Component to spawn objects group 2 on the left side */
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Spawner Settings")
-	TObjectPtr<URunnerSpawnObjectsComponent> RightSpawner;
+	TObjectPtr<URunnerSpawnObjectsComponent> LeftSpawner2;
+
+	/** Component to spawn objects group 1 on the right side */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Spawner Settings")
+	TObjectPtr<URunnerSpawnObjectsComponent> RightSpawner1;
+
+	/** Component to spawn objects group 2 the right side */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Spawner Settings")
+	TObjectPtr<URunnerSpawnObjectsComponent> RightSpawner2;
 
 	/** Spawn all objects based on constraints */
 	UFUNCTION(BlueprintCallable)

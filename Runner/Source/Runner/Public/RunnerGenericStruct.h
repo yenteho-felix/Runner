@@ -16,9 +16,11 @@ struct FSpawnSettings
 
 	FSpawnSettings()
 		: bEnabled(true)
+		, bRandomRotator(false)
+		, bRandomZaxis(false)
 		, ActorNum(1)
 		, PointsPerLane(6)
-		, LaneYOffsets({-325, 0, 325})
+		, LaneYOffsets({0})
 		, XOffset(0)
 		, ZOffset(0)
 		, ActorRotator(FRotator::ZeroRotator)
@@ -28,6 +30,14 @@ struct FSpawnSettings
 	/** Enable or disable object spawning */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
 	bool bEnabled;
+
+	/** Enable random rotation */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+	bool bRandomRotator;
+
+	/** Enable random Y-axis */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")
+	bool bRandomZaxis;
 
 	/** The actor classes to spawn */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Settings")

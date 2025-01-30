@@ -18,11 +18,11 @@ ARunnerSkylineActor::ARunnerSkylineActor()
 	Scene = CreateDefaultSubobject<USceneComponent>("Scene");
 	RootComponent = Scene;
 	
-	LeftSkyline = CreateDefaultSubobject<UChildActorComponent>("LeftSkyline");
-	LeftSkyline->SetupAttachment(Scene);
+	LeftGround = CreateDefaultSubobject<UChildActorComponent>("LeftSkyline");
+	LeftGround->SetupAttachment(Scene);
 	
-	RightSkyline = CreateDefaultSubobject<UChildActorComponent>("RightSkyline");
-	RightSkyline->SetupAttachment(Scene);
+	RightGround = CreateDefaultSubobject<UChildActorComponent>("RightSkyline");
+	RightGround->SetupAttachment(Scene);
 
 	BoxCollision = CreateDefaultSubobject<UBoxComponent>("BoxCollision");
 	BoxCollision->SetupAttachment(Scene);
@@ -34,21 +34,16 @@ ARunnerSkylineActor::ARunnerSkylineActor()
 	BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &ARunnerSkylineActor::OnBoxCollisionBeginOverlap);
 
 	// Create and assign default value for buildings on the left
-	LeftSpawner = CreateDefaultSubobject<URunnerSpawnObjectsComponent>(TEXT("LeftSpawner"));
-	LeftSpawner->SpawnSettings.ActorNum = 3;
-	LeftSpawner->SpawnSettings.PointsPerLane = 3;
-	LeftSpawner->SpawnSettings.LaneYOffsets = {0};
-	LeftSpawner->SpawnSettings.XOffset = 50;
-	LeftSpawner->SpawnSettings.ZOffset = 0;
+	LeftSpawner1 = CreateDefaultSubobject<URunnerSpawnObjectsComponent>(TEXT("LeftSpawner1"));
+	
+	// Create and assign default value for trees on the left
+	LeftSpawner2 = CreateDefaultSubobject<URunnerSpawnObjectsComponent>(TEXT("LeftSpawner2"));
 	
 	// Create and assign default value for buildings on the right
-	RightSpawner = CreateDefaultSubobject<URunnerSpawnObjectsComponent>(TEXT("RightSpawner"));
-	RightSpawner->SpawnSettings.ActorNum = 3;
-	RightSpawner->SpawnSettings.PointsPerLane = 3;
-	RightSpawner->SpawnSettings.LaneYOffsets = {0};
-	RightSpawner->SpawnSettings.XOffset = 50;
-	RightSpawner->SpawnSettings.ZOffset = 0;
-	RightSpawner->SpawnSettings.ActorRotator = FRotator(0, 180, 0);
+	RightSpawner1 = CreateDefaultSubobject<URunnerSpawnObjectsComponent>(TEXT("RightSpawner1"));
+	
+	// Create and assign default value for trees on the right
+	RightSpawner2 = CreateDefaultSubobject<URunnerSpawnObjectsComponent>(TEXT("RightSpawner2"));
 }
 
 void ARunnerSkylineActor::OnConstruction(const FTransform& Transform)
@@ -102,13 +97,15 @@ void ARunnerSkylineActor::HandleBoxCollision_Implementation(AActor* OverlappingA
 
 void ARunnerSkylineActor::SpawnAllObjects()
 {
-	if (LeftSkyline)
+	if (LeftGround)
 	{
-		LeftSpawner->SpawnObjects(LeftSkyline);
+		LeftSpawner1->SpawnObjects(LeftGround);
+		LeftSpawner2->SpawnObjects(LeftGround);
 	}
-	if (RightSkyline)
+	if (RightGround)
 	{
-		RightSpawner->SpawnObjects(RightSkyline);
+		RightSpawner1->SpawnObjects(RightGround);
+		RightSpawner2->SpawnObjects(RightGround);
 	}
 }
 

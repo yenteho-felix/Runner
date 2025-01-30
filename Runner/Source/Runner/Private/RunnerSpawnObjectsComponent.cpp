@@ -45,7 +45,26 @@ void URunnerSpawnObjectsComponent::SpawnObjects(UChildActorComponent* AttachPare
         // Pick a random class form the array
         TSubclassOf<AActor> ActorClass = SpawnSettings.ActorClasses[FMath::RandRange(0, SpawnSettings.ActorClasses.Num() - 1)];
 
-        SpawnObjectClass(ActorClass, SpawnTransforms[i], AttachParent);
+        FTransform NewTransform = SpawnTransforms[i];
+
+        // Randomize rotation if enabled
+        if (SpawnSettings.bRandomRotator)
+        {
+            float RandomYaw = FMath::RandRange(0.0f, 270.0f);
+            FRotator NewRotation = NewTransform.GetRotation().Rotator();
+            NewRotation.Yaw = RandomYaw;
+            NewTransform.SetRotation(NewRotation.Quaternion());
+        }
+
+        // Randomize Z-axis position if enabled
+        if (SpawnSettings.bRandomZaxis)
+        {
+            FVector NewLocation = NewTransform.GetLocation();
+            NewLocation.Z = FMath::RandRange(-50.0f, 50.0f); // Random Y-axis position between 0 and 1000 cm
+            NewTransform.SetLocation(NewLocation);
+        }
+
+        SpawnObjectClass(ActorClass, NewTransform, AttachParent);
     }
 
     // Remove spawned that overlapped with existing objects

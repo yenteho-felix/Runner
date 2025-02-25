@@ -11,7 +11,7 @@ class UInputMappingContext;
 class UUserWidget;
 
 /**
- * 
+ *  Player controller for Runner project
  */
 UCLASS()
 class RUNNER_API ARunnerPlayerController : public APlayerController
@@ -27,33 +27,38 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* JumpAction;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* SlideAction;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* PauseAction;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* LeftKeyAction;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* RightKeyAction;
 
 	virtual void SetupInputComponent() override;
 
 	void Move(const FInputActionValue& Value);
-	void Look(const FInputActionValue& Value);
-	void Jump();
-	void Slide();
-
-/* UI */
-public:
-	void ShowPauseMenu();
-	void HidePauseMenu();
-	UFUNCTION(BlueprintCallable)
-	void TogglePauseMenu();
 	
-protected:
-	UPROPERTY()
-	UUserWidget* PauseMenuWidget;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<UUserWidget> PauseMenuWidgetClass;
+	void Look(const FInputActionValue& Value);
+	
+	void Jump();
+	
+	void Slide();
+	
+	void SwitchLaneLeft();
+	
+	void SwitchLaneRight();
+	
+	void TogglePauseMenu();
 };

@@ -1,22 +1,24 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "RunnerGameMode.h"
-#include "RunnerCharacter.h"
+#include "RunnerTileManager.h"
+#include "RunnerScoreManager.h"
 #include "UObject/ConstructorHelpers.h"
 
 ARunnerGameMode::ARunnerGameMode()
 {
-	// set default pawn class to our Blueprinted character
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/ThirdPerson/Blueprints/BP_ThirdPersonCharacter"));
-	if (PlayerPawnBPClass.Class != NULL)
-	{
-		DefaultPawnClass = PlayerPawnBPClass.Class;
-	}
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = false;
+	
+	RunnerFloorManager = CreateDefaultSubobject<URunnerTileManager>("FloorManager");
+	RunnerSkylineManager = CreateDefaultSubobject<URunnerTileManager>("SkylineManager");
+	RunnerScoreManager = CreateDefaultSubobject<URunnerScoreManager>("ScoreManager");
+}
 
-	// Set the player controller class to the Blueprinted player controller
-	static ConstructorHelpers::FClassFinder<APlayerController> PlayerControllerBPClass(TEXT("/Game/ThirdPerson/Blueprints/BP_ThirdPersonPlayerController"));
-	if (PlayerControllerBPClass.Class != nullptr)
-	{
-		PlayerControllerClass = PlayerControllerBPClass.Class;
-	}
+void ARunnerGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	RunnerFloorManager->InitiateTile();
+	RunnerSkylineManager->InitiateTile();
 }

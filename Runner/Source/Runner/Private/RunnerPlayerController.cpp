@@ -34,6 +34,8 @@ void ARunnerPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ARunnerPlayerController::Jump);
 		EnhancedInputComponent->BindAction(SlideAction, ETriggerEvent::Triggered, this, &ARunnerPlayerController::Slide);
 		EnhancedInputComponent->BindAction(PauseAction, ETriggerEvent::Started, this, &ARunnerPlayerController::TogglePauseMenu);
+		EnhancedInputComponent->BindAction(LeftKeyAction, ETriggerEvent::Triggered, this, &ARunnerPlayerController::SwitchLaneLeft);
+		EnhancedInputComponent->BindAction(RightKeyAction, ETriggerEvent::Triggered, this, &ARunnerPlayerController::SwitchLaneRight);
 	}
 	else
 	{
@@ -88,69 +90,32 @@ void ARunnerPlayerController::Slide()
 	}
 }
 
-void ARunnerPlayerController::ShowPauseMenu()
+void ARunnerPlayerController::SwitchLaneLeft()
 {
-	UE_LOG(LogTemp, Display, TEXT("Open Pause Menu"));
-	//PauseMenuWidget = CreateWidget<UUserWidget>(this, PauseMenuWidgetClass);
-	if (!PauseMenuWidgetClass)
+	if (ARunnerCharacter* MyCharacter = Cast<ARunnerCharacter>(GetPawn()))
 	{
-		return;
-	}
-	
-	if (!PauseMenuWidget)
-	{
-		PauseMenuWidget = CreateWidget<UUserWidget>(this, PauseMenuWidgetClass);
-	}
-	
-	if (PauseMenuWidget && !PauseMenuWidget->IsInViewport())
-	{
-		PauseMenuWidget->AddToViewport();
-	
-		// Set input mode for UI
-		FInputModeUIOnly InputMode;
-		if (PauseMenuWidget->IsFocusable())
+		if (!MyCharacter->bIsSwitchingLane)
 		{
-			InputMode.SetWidgetToFocus(PauseMenuWidget->TakeWidget());
+			MyCharacter->SwitchLane(-1);
 		}
-		SetInputMode(InputMode);
-	
-		// Show mouse cursor
-		bShowMouseCursor = true;
-	
-		// Pause the game
-		SetPause(true);
 	}
 }
 
-void ARunnerPlayerController::HidePauseMenu()
+void ARunnerPlayerController::SwitchLaneRight()
 {
-	UE_LOG(LogTemp, Display, TEXT("Close Pause Menu"));
-	//PauseMenuWidget = nullptr;
-	if (PauseMenuWidget)
+	if (ARunnerCharacter* MyCharacter = Cast<ARunnerCharacter>(GetPawn()))
 	{
-		PauseMenuWidget->RemoveFromParent();
-		PauseMenuWidget = nullptr;
-	
-		// Reset input mode
-		FInputModeGameOnly InputMode;
-		SetInputMode(InputMode);
-	
-		// Hide mouse cursor
-		bShowMouseCursor = false;
-	
-		// Resume the game
-		SetPause(false);
+		if (!MyCharacter->bIsSwitchingLane)
+		{
+			MyCharacter->SwitchLane(1);
+		}
 	}
 }
 
 void ARunnerPlayerController::TogglePauseMenu()
 {
-	if (PauseMenuWidget && PauseMenuWidget->IsInViewport())
+	if (ARunnerCharacter* MyCharacter = Cast<ARunnerCharacter>(GetPawn()))
 	{
-		HidePauseMenu();
-	}
-	else
-	{
-		ShowPauseMenu();
+		MyCharacter->TogglePauseMenu();
 	}
 }

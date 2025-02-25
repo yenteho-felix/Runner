@@ -6,6 +6,12 @@
 #include "GameFramework/GameModeBase.h"
 #include "RunnerGameMode.generated.h"
 
+class URunnerTileManager;
+class URunnerScoreManager;
+
+/**
+ *  Game mode for Runner project
+ */
 UCLASS(minimalapi)
 class ARunnerGameMode : public AGameModeBase
 {
@@ -13,6 +19,19 @@ class ARunnerGameMode : public AGameModeBase
 
 public:
 	ARunnerGameMode();
+
+private:
+	virtual void BeginPlay() override;
+	
+public:
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	TObjectPtr<URunnerTileManager> RunnerFloorManager;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	TObjectPtr<URunnerTileManager> RunnerSkylineManager;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	TObjectPtr<URunnerScoreManager> RunnerScoreManager;
 };
 
 

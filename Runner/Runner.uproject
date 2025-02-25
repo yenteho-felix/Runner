@@ -9,7 +9,18 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
-				"Engine"
+				"Engine",
+				"CoreUObject"
+			]
+		},
+		{
+			"Name": "LoadingScreenModule",
+			"Type": "Runtime",
+			"LoadingPhase": "PreLoadingScreen",
+			"AdditionalDependencies": [
+				"Slate",
+				"SlateCore",
+				"DeveloperSettings"
 			]
 		}
 	],

@@ -20,8 +20,8 @@ public:
 	TArray<FSoftObjectPath> MapsWithLoadingScreens;
 
 	/** Soft reference to the background image asset for the loading screen */
-	UPROPERTY(Config, EditAnywhere, Category = "Loading Screen", meta = (AllowedClasses = "World"))
-	FSoftObjectPath BackgroundImage;
+	UPROPERTY(Config, EditAnywhere, Category = "Loading Screen", meta = (AllowedClasses = "Texture2D"))
+	TSoftObjectPtr<UTexture2D> BackgroundImage;
 
 	/** Minimum duration that the loading screen will be displayed */
 	UPROPERTY(Config, EditAnywhere, Category = "Loading Screen", meta = (AllowedClasses = "World"))

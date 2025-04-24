@@ -10,19 +10,17 @@
 class FLoadingScreenModule : public IModuleInterface
 {
 public:
-    /** Called when module is first loaded */
+    /** Called when module is first loaded and ended */
     virtual void StartupModule() override;
+    virtual void ShutdownModule() override;
 
     /** Identifies this as a game module, not an editor module */
-    virtual bool IsGameModule() const override;
+    virtual bool IsGameModule() const override { return true; };
 
     /** Shows the loading screen during the level transitions */
     virtual void StartLoadingScreen(const FString& MapName);
 
-    /** Called when module is ended */
-    virtual void ShutdownModule() override;
-
 private:
     /** Store the background texture to prevent it from being garbage collected */
-    UTexture2D* BackgroundTexture;
+    UTexture2D* BackgroundTexture; 
 };

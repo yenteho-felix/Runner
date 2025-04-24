@@ -6,39 +6,74 @@
 #include "SlateExtras.h"
 
 BEGIN_SLATE_FUNCTION_BUILD_OPTIMIZATION
+
 void SLoadingScreen::Construct(const FArguments& InArgs)
 {
+	// Store the texture passed in from the loading module
 	BackgroundTexture = InArgs._BackgroundTexture;
+
+	// Initialize the background brush and assign the texture
 	BackgroundBrush = MakeShareable(new FSlateBrush());
 	BackgroundBrush->SetResourceObject(BackgroundTexture);
 
+	// Log a warning if the background texture is not set
+	if (!BackgroundTexture)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SLoadingScreen: BackgroundTexture is null. Fallback to black background."));
+	}
+
+	// Prepare font to display
+	FSlateFontInfo FontInfo = FCoreStyle::Get().GetFontStyle("NormalFont");
+	FontInfo.Size = 20;
+
 	// Begin constructing the widget hierarchy
-	// ChildSlot is the root slot of our compound widget=
 	ChildSlot
 	[
-		// Create an overlay widget which allows stacking multiple elements
 		SNew(SOverlay)
-			// Add first slot to the overlay for the background image
-			+ SOverlay::Slot()
-			.HAlign(HAlign_Fill)
-			.VAlign(VAlign_Fill)
+
+		// Slot for the background image
+		+ SOverlay::Slot()
+		.HAlign(HAlign_Fill)
+		.VAlign(VAlign_Fill)
+		[
+			SNew(SImage)
+			.Image(TAttribute<const FSlateBrush*>::Create(
+				[this]() { return BackgroundTexture ? BackgroundBrush.Get() : nullptr; }
+			))
+			// Fallback color to black if texture is not available
+			.ColorAndOpacity(BackgroundTexture ? FLinearColor::White : FLinearColor::Gray)
+		]
+
+		// Slot for the loading spinner
+		+ SOverlay::Slot()
+		.VAlign(VAlign_Bottom)
+		.HAlign(HAlign_Center)
+		.Padding(10.0f)
+		[
+			SNew(SVerticalBox)
+
+			// "Loading" text
+			+ SVerticalBox::Slot()
+			.AutoHeight()
 			[
-				// Create an image widget using our background brush
-				SNew(SImage)
-					.Image(BackgroundTexture ? BackgroundBrush.Get() : nullptr)
-					.ColorAndOpacity(FLinearColor::White)
+				SNew(STextBlock)
+				.Text(FText::FromString(TEXT("Loading")))
+				.Font(FontInfo)
+				.Justification(ETextJustify::Center)
+				.ColorAndOpacity(FLinearColor::White)
 			]
-			// Add second slot to the overlay for the loading indicator
-			+ SOverlay::Slot()
-			.VAlign(VAlign_Bottom)
-			.HAlign(HAlign_Center)
-			.Padding(10.0f)
+
+			// Spinner
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			.Padding(FMargin(0, 5, 0, 0))
 			[
-				// Create a throbber widget
 				SNew(SThrobber)
-					.Visibility(EVisibility::HitTestInvisible)
-					.NumPieces(20)
+				.Visibility(EVisibility::HitTestInvisible)
+				.NumPieces(20)
 			]
+		]
 	];
 }
+
 END_SLATE_FUNCTION_BUILD_OPTIMIZATION

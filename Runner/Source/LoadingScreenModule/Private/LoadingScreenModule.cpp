@@ -12,17 +12,17 @@ void FLoadingScreenModule::StartupModule()
     // Load the background texture, which will be used for the loading screen
     if (ULevelLoadingSettings* LoadingSettings = GetMutableDefault<ULevelLoadingSettings>())
     {
-        const FSoftObjectPath& BGPath = LoadingSettings->BackgroundImage;
-        if (!BGPath.IsNull())
+        BackgroundTexture = LoadingSettings->BackgroundImage.LoadSynchronous();
+        if (!BackgroundTexture)
         {
-            BackgroundTexture = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass(), nullptr, *BGPath.ToString()));
+            UE_LOG(LogTemp, Warning, TEXT("BackgroundTexture failed to load."));
         }
     }
 }
 
-bool FLoadingScreenModule::IsGameModule() const
+void FLoadingScreenModule::ShutdownModule()
 {
-	return true;
+    UE_LOG(LogTemp, Display, TEXT("FLoadingScreenModuleModule::ShutdownModule"));
 }
 
 void FLoadingScreenModule::StartLoadingScreen(const FString& MapName)
@@ -57,11 +57,6 @@ void FLoadingScreenModule::StartLoadingScreen(const FString& MapName)
     LoadingScreen.MinimumLoadingScreenDisplayTime = LoadingSettings->MinLoadingScreenDisplayTime;
     LoadingScreen.WidgetLoadingScreen = SNew(SLoadingScreen).BackgroundTexture(BackgroundTexture);
     GetMoviePlayer()->SetupLoadingScreen(LoadingScreen);
-}
-
-void FLoadingScreenModule::ShutdownModule()
-{
-    UE_LOG(LogTemp, Display, TEXT("FLoadingScreenModuleModule::ShutdownModule"));
 }
 
 #undef LOCTEXT_NAMESPACE

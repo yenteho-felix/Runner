@@ -11,7 +11,7 @@ https://felix-yenteho.artstation.com/projects/XJOExn
 - [x] Character selection
 - [x] Dynamic map generation
 - [x] Pause, resume, and restart functionality
-- [x] Modular Content System
+- [x] Procedural Content Generation
 
 ### Modular Content System
 - [x] Centralized settings for characters, buildings, and spawnable objects
